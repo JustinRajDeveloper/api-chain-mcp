@@ -1,0 +1,35 @@
+# Non-secret config lives here. Secrets come from .env / .env.<env> / real env vars via ${VAR} or ${VAR:-default}.
+# Select environment with APICHAIN_ENV=dev|qa|stage (or --env on the CLI).
+
+settings:
+  timeout_seconds: 30
+  verify_tls: true                 # set false only for internal self-signed QA hosts
+  save_traces: true                # full request/response of every run -> runs/*.json
+  max_body_chars_in_result: 1500   # caps what goes back to the LLM (token control)
+  openapi_base_url_var: BASE_URL
+
+default_headers:                   # added to every request unless the request overrides it
+  Accept: application/json
+  Authorization: Bearer {{TOKEN}}  # so Swagger-loaded operations are authenticated too
+
+environments:
+  local:
+    BASE_URL: http://127.0.0.1:9090
+    TOKEN: local-dev-token
+    channel: WEB
+    customerType: CONSUMER
+    accountType: POSTPAID
+
+  dev:
+    BASE_URL: ${DEV_BASE_URL:-https://customergraph-dev.example.com}
+    TOKEN: ${DEV_TOKEN}
+    channel: WEB
+    customerType: CONSUMER
+    accountType: POSTPAID
+
+  qa:
+    BASE_URL: ${QA_BASE_URL}
+    TOKEN: ${QA_TOKEN}
+    channel: RETAIL
+    customerType: CONSUMER
+    accountType: POSTPAID

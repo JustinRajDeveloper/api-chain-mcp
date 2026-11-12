@@ -1,0 +1,59 @@
+# Paste your real requests here. Two styles are supported in the same file:
+#   (a) REST-client style (VS Code REST Client / IntelliJ HTTP client)
+#   (b) raw curl
+# Name each request with "# @name xxx" (or the text after ###). Use {{var}} for anything dynamic.
+# {{BASE_URL}}, {{TOKEN}}, {{channel}} ... come from config/settings.yaml + .env
+# Built-ins: {{$uuid}} {{$timestamp}} {{$timestampMs}} {{$randomInt}}
+
+### Create individual
+# @name createIndividual
+# @desc Creates a person record
+POST {{BASE_URL}}/v1/individuals
+Content-Type: application/json
+Authorization: Bearer {{TOKEN}}
+X-Correlation-Id: {{$uuid}}
+
+{
+  "firstName": "{{firstName}}",
+  "lastName": "{{lastName}}",
+  "email": "{{email}}",
+  "channel": "{{channel}}"
+}
+
+### Create customer (curl style works too)
+# @name createCustomer
+curl -X POST '{{BASE_URL}}/v1/customers' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer {{TOKEN}}' \
+  -d '{"individualId": "{{individualId}}", "customerType": "{{customerType}}"}'
+
+### Create account
+# @name createAccount
+POST {{BASE_URL}}/v1/accounts
+Content-Type: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+  "individualId": "{{individualId}}",
+  "customerId": "{{customerId}}",
+  "accountType": "{{accountType}}"
+}
+
+### Submit order
+# @name submitOrder
+POST {{BASE_URL}}/v1/orders
+Content-Type: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+  "individualId": "{{individualId}}",
+  "customerId": "{{customerId}}",
+  "accountId": "{{accountId}}",
+  "productCode": "{{productCode}}",
+  "quantity": {{quantity}}
+}
+
+### Get order (handy for verification / polling)
+# @name getOrder
+GET {{BASE_URL}}/v1/orders/{{orderId}}
+Authorization: Bearer {{TOKEN}}

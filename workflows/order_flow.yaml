@@ -1,0 +1,45 @@
+name: order_flow
+description: Create individual -> customer -> account -> submit order. Returns all four IDs.
+
+# Anything not passed by the caller falls back to default. Defaults can use built-ins.
+inputs:
+  firstName:   { default: "Test" }
+  lastName:    { default: "User{{$randomInt}}" }
+  email:       { default: "qa+{{$timestamp}}@example.com" }
+  productCode: { required: true }
+  quantity:    { default: 1 }
+
+steps:
+  - id: individual
+    request: createIndividual          # name from the .http file
+    expect_status: [200, 201]
+    extract:
+      individualId: $.id               # JSONPath into response body
+
+  - id: customer
+    request: createCustomer
+    with:                              # step-level overrides (optional)
+      customerType: CONSUMER
+    extract:
+      customerId: $.customerId
+
+  - id: account
+    request: createAccount
+    extract:
+      accountId: $.account.id
+    retry: { attempts: 3, delay_ms: 1500 }   # eventual consistency (Kafka/Cassandra) between steps
+
+  - id: order
+    request: submitOrder
+    expect_status: 202
+    extract:
+      orderId: $.orderId
+      orderStatus: $.status
+      # tracking: header:Location        # headers can be extracted too
+
+output:
+  individualId: "{{individualId}}"
+  customerId:   "{{customerId}}"
+  accountId:    "{{accountId}}"
+  orderId:      "{{orderId}}"
+  orderStatus:  "{{orderStatus}}"

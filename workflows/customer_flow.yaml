@@ -1,0 +1,27 @@
+name: customer_flow
+description: >
+  Create a customer. If individualId is given, only createCustomer runs.
+  If not, an individual is created first and its id is passed to createCustomer.
+
+inputs:
+  individualId: { required: false, description: "Existing individual id. Leave empty to create a new individual." }
+  firstName:    { default: "Test" }
+  lastName:     { default: "User{{$randomInt}}" }
+  email:        { default: "qa+{{$timestamp}}@example.com" }
+  customerType: { default: "CONSUMER" }
+
+steps:
+  - id: individual
+    request: createIndividual
+    skip_if: individualId          # caller already has one -> don't create
+    extract:
+      individualId: $.id
+
+  - id: customer
+    request: createCustomer
+    extract:
+      customerId: $.customerId
+
+output:
+  individualId: "{{individualId}}"
+  customerId:   "{{customerId}}"
